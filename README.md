@@ -1,1 +1,1 @@
-# Sequential-Ordering-Problem
+# Sequential Ordering Problem
