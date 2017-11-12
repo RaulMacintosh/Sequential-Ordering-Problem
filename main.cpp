@@ -71,6 +71,14 @@ void printChormossome(vector<int> chromossome){
 }
 
 bool isValid(vector<int> chromossome){
+	for (int i = 0; i < n; i++){
+		for (int j = i+1; j < n; j++){
+			if (chromossome[i] == chromossome[j]){
+				return false;
+			}
+		}
+	}
+
 	for (int i = 0; i < n-1; i++){
 		if(graph[chromossome[i]][chromossome[i+1]] == -1){
 			return false;
@@ -148,9 +156,6 @@ void getBestSolution(){
 			bestSolution = valids[i];
 		}
 	}
-
-	printChormossome(bestSolution);
-	printf("Cost: %i\n", bestCost);
 }
 
 void mutation(vector<int> &chromossome){
@@ -182,6 +187,86 @@ vector<int> crossOver(int y, int x){
 	return soon;
 }
 
+vector<int> crossOver2(int y, int x){
+	vector<int> father = nonValids[y];
+	vector<int> mother = valids[x];
+	vector<int> soon;
+
+	for(int i = 0; i < n; i++){
+		if (i % 2 == 0){
+			soon.push_back(father[i]);
+		}else{
+			soon.push_back(mother[i]);
+		}
+	}
+
+	if(!isValid(soon)){
+		mutation(soon);
+	}
+
+	return soon;
+}
+
+vector<int> crossOver3(int y, int x){
+	vector<int> father = valids[y];
+	vector<int> mother = nonValids[x];
+	vector<int> soon;
+
+	for(int i = 0; i < n; i++){
+		if (i % 2 == 0){
+			soon.push_back(father[i]);
+		}else{
+			soon.push_back(mother[i]);
+		}
+	}
+
+	if(!isValid(soon)){
+		mutation(soon);
+	}
+
+	return soon;
+}
+
+void perturbation(){
+	for (int i = 0; i < initialPopulation; i++){
+		int father = rand()%(nonValids.size());
+		int mother = rand()%(initialPopulation);
+
+		if(father == mother){
+			i -= 1;
+			continue;
+		}
+
+		vector<int> soon = crossOver2(father, mother);
+
+		if(isValid(soon)){
+			valids[mother] = soon;
+		}else{
+			nonValids[father] = soon;
+		}
+	}	
+}
+
+void perturbation2(){
+	for (int i = 0; i < initialPopulation; i++){
+		int father = rand()%(initialPopulation);
+		int mother = rand()%(nonValids.size());
+
+		if(father == mother){
+			i -= 1;
+			continue;
+		}
+
+		vector<int> soon = crossOver3(father, mother);
+
+		if(isValid(soon)){
+			valids[father] = soon;
+		}else{
+			nonValids[mother] = soon;
+		}
+	}	
+}
+
 void procreation(){
 	for (int i = 0; i < initialPopulation; i++){
 		int father = rand()%(initialPopulation);
@@ -197,7 +282,7 @@ void procreation(){
 		if(isValid(soon)){
 			valids[father] = soon;
 		}else{
-			nonValids.push_back(soon);
+			nonValids[mother] = soon;
 		}
 	}
 }
@@ -205,16 +290,27 @@ void procreation(){
 int main(int argc, char* argv[]){
 	initialPopulation = atoi(argv[1]);
 	readInstance(argv[2]);
-	//printInstance();
 
 	srand(time(NULL));
 
 	generatePopulation();
 	getBestSolution();
 
-	procreation();
+	for (int i = 0; i < n; i++){ // N perturbações
+		for (int j = 0; j < n; j++){ // N gerações
+			procreation();
+			getBestSolution();
+		}
 
-	getBestSolution();
+		if (i % 2 == 0){
+			perturbation();
+		}else{
+			perturbation2();
+		}
+	}
+
+	printChormossome(bestSolution);
+	printf("Cost: %i\n", bestCost);
 
 	return 0;
 }
