@@ -69,7 +69,7 @@ bool isValid(vector<int> chromossome){
 	}
 
 	for (int i = 0; i < n-1; i++){
-		if(graph[chromossome[i]][chromossome[i+1]] == -1){
+		if(graph[chromossome[i]][chromossome[i+1]] == -1 || graph[chromossome[i]][chromossome[i+1]] == 0){
 			return false;
 		}
 	}
